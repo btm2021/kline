@@ -219,31 +219,36 @@ async function combineAndSortCsvFiles() {
 async function removeSecondLine(filePath, tempFilePath) {
   const fileStream = fs.createReadStream(filePath);
   const rl = readline.createInterface({
-    input: fileStream,
-    crlfDelay: Infinity,
+      input: fileStream,
+      crlfDelay: Infinity
   });
 
   const outputStream = fs.createWriteStream(tempFilePath);
-  let lineNumber = 0;
 
   for await (const line of rl) {
-    lineNumber++;
-    // Skip the second line
-    if (lineNumber === 2) {
-      continue;
-    }
-    outputStream.write(`${line}\n`);
+      // Check if the line contains 'NaN' value
+      if (!line.includes('NaN')) {
+          outputStream.write(`${line}\n`);
+      }
   }
 
-  outputStream.close();
-  fileStream.close();
-
-  // After processing, close the streams and replace the original file with the corrected one
   outputStream.on('finish', () => {
-    // Replace the original file with the temp file
-    fs.rename(tempFilePath, filePath, (err) => {
-      if (err) throw err;
-      console.log('The second line has been successfully removed.');
-    });
+      console.log('Finished writing the cleaned data.');
+  });
+
+  outputStream.on('error', (error) => {
+      console.error(`Error writing the cleaned data: ${error}`);
+  });
+
+  // Close the stream
+  outputStream.end();
+
+  // Wait for the stream to be closed before replacing the original file
+  outputStream.on('close', () => {
+      // Replace the original file with the cleaned file
+      fs.rename(tempFilePath, filePath, (err) => {
+          if (err) throw err;
+          console.log('Rows with NaN values removed successfully.');
+      });
   });
 }
