@@ -175,17 +175,41 @@ async function readCsvFiles(directory) {
   return allData;
 }
 
+function generateJsonFromFiles() {
+
+
+  let directory = path.join(__dirname, 'klines');
+  const files = fs.readdirSync(directory).filter(file => file.endsWith('.csv'));
+  const data = files.map(file => {
+    // Extract the symbol and timeframe from the file name
+    const [name, timeframeWithExtension] = file.split('_');
+    const timeframe = timeframeWithExtension.replace('.csv', '');
+    // Construct the URL
+    const url = `https://raw.githubusercontent.com/btm2021/kline/main/klines/${file}`;
+
+    return { name, timeframe, url };
+  });
+
+  // Write the JSON array to a file
+  fs.writeFileSync(path.join(__dirname, 'list_data_local.json'), JSON.stringify(data, null, 2), 'utf8');
+  console.log('JSON data has been written to list_data_local.json');
+}
+
 function writeCsvFile(data, filePath) {
-  fastCsv
-    .write(data, { headers: expectedHeaders })
-    .pipe(fs.createWriteStream(filePath))
-    .on('finish', () => {
-      console.log(`Combined CSV written to ${filePath}`);
-      //delete all file in data
-      deleteAllFilesInDirectory('data');
-      console.log('delete all file');
-      removeSecondLine(filePath, filePath + '_temp');
-    });
+  fs.unlink(filePath, (err) => {
+    fastCsv
+      .write(data, { headers: expectedHeaders })
+      .pipe(fs.createWriteStream(filePath))
+      .on('finish', () => {
+        console.log(`Combined CSV written to ${filePath}`);
+        //delete all file in data
+        deleteAllFilesInDirectory('data');
+        console.log('delete all file');
+        removeSecondLine(filePath, filePath + '_temp');
+        generateJsonFromFiles();
+      });
+  });
+
 }
 
 function deleteAllFilesInDirectory(directory) {
@@ -219,25 +243,25 @@ async function combineAndSortCsvFiles() {
 async function removeSecondLine(filePath, tempFilePath) {
   const fileStream = fs.createReadStream(filePath);
   const rl = readline.createInterface({
-      input: fileStream,
-      crlfDelay: Infinity
+    input: fileStream,
+    crlfDelay: Infinity
   });
 
   const outputStream = fs.createWriteStream(tempFilePath);
 
   for await (const line of rl) {
-      // Check if the line contains 'NaN' value
-      if (!line.includes('NaN')) {
-          outputStream.write(`${line}\n`);
-      }
+    // Check if the line contains 'NaN' value
+    if (!line.includes('NaN')) {
+      outputStream.write(`${line}\n`);
+    }
   }
 
   outputStream.on('finish', () => {
-      console.log('Finished writing the cleaned data.');
+    console.log('Finished writing the cleaned data.');
   });
 
   outputStream.on('error', (error) => {
-      console.error(`Error writing the cleaned data: ${error}`);
+    console.error(`Error writing the cleaned data: ${error}`);
   });
 
   // Close the stream
@@ -245,10 +269,10 @@ async function removeSecondLine(filePath, tempFilePath) {
 
   // Wait for the stream to be closed before replacing the original file
   outputStream.on('close', () => {
-      // Replace the original file with the cleaned file
-      fs.rename(tempFilePath, filePath, (err) => {
-          if (err) throw err;
-          console.log('Rows with NaN values removed successfully.');
-      });
+    // Replace the original file with the cleaned file
+    fs.rename(tempFilePath, filePath, (err) => {
+      if (err) throw err;
+      console.log('Rows with NaN values removed successfully.');
+    });
   });
 }

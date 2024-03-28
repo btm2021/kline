@@ -1,0 +1,32 @@
+[
+  {
+    "name": "BANDUSDT",
+    "timeframe": "15m",
+    "url": "https://raw.githubusercontent.com/btm2021/kline/main/klines/BANDUSDT_15m.csv"
+  },
+  {
+    "name": "C98USDT",
+    "timeframe": "15m",
+    "url": "https://raw.githubusercontent.com/btm2021/kline/main/klines/C98USDT_15m.csv"
+  },
+  {
+    "name": "IMXUSDT",
+    "timeframe": "15m",
+    "url": "https://raw.githubusercontent.com/btm2021/kline/main/klines/IMXUSDT_15m.csv"
+  },
+  {
+    "name": "KAVAUSDT",
+    "timeframe": "15m",
+    "url": "https://raw.githubusercontent.com/btm2021/kline/main/klines/KAVAUSDT_15m.csv"
+  },
+  {
+    "name": "KNCUSDT",
+    "timeframe": "15m",
+    "url": "https://raw.githubusercontent.com/btm2021/kline/main/klines/KNCUSDT_15m.csv"
+  },
+  {
+    "name": "MASKUSDT",
+    "timeframe": "15m",
+    "url": "https://raw.githubusercontent.com/btm2021/kline/main/klines/MASKUSDT_15m.csv"
+  }
+]
